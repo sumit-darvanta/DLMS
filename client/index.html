@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <!-- <link rel="icon" type="image/svg+xml" href="/ALogo.png" /> -->
+    <link rel="icon" type="image/png" sizes="7x7" href="/ALogo.png" />
+    <!-- <link rel="icon" type="image/png" sizes="32x32" href="/ALogo-32.png" /> -->
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Aparaitech</title>
+
+    <!-- ✅ Suppress harmless Razorpay console warnings BEFORE Razorpay loads -->
+    <script>
+      (function () {
+        const shouldSuppress = function (msg) {
+          if (!msg) return false;
+          const lower = String(msg).toLowerCase();
+          const msgStr = String(msg);
+
+          // Filter Razorpay header warnings (various formats)
+          if (
+            (lower.includes("refused to get unsafe header") &&
+              lower.includes("x-rtb-fingerprint-id")) ||
+            msgStr.includes("x-rtb-fingerprint-id")
+          ) {
+            return true;
+          }
+
+          // Filter SVG warnings
+          if (
+            (lower.includes("expected length") &&
+              (lower.includes("height") || lower.includes("width")) &&
+              lower.includes("auto")) ||
+            (lower.includes("svg") &&
+              lower.includes("attribute") &&
+              lower.includes("auto"))
+          ) {
+            return true;
+          }
+
+          // Filter permissions policy violations (harmless)
+          if (
+            lower.includes("permissions policy violation") ||
+            lower.includes("accelerometer is not allowed") ||
+            lower.includes("devicemotion events are blocked") ||
+            lower.includes("deviceorientation events are blocked")
+          ) {
+            return true;
+          }
+
+          // Filter CORS warnings from Razorpay (harmless)
+          if (
+            lower.includes("cors policy") &&
+            (lower.includes("razorpay") || lower.includes("api.razorpay.com"))
+          ) {
+            return true;
+          }
+
+          // Filter mixed content warnings (auto-upgraded)
+          if (
+            lower.includes("mixed content") &&
+            lower.includes("automatically upgraded")
+          ) {
+            return true;
+          }
+
+          return false;
+        };
+
+        const origError = console.error;
+        console.error = function () {
+          const msg = arguments[0];
+          if (!shouldSuppress(msg)) {
+            origError.apply(console, arguments);
+          }
+        };
+
+        const origWarn = console.warn;
+        console.warn = function () {
+          const msg = arguments[0];
+          if (!shouldSuppress(msg)) {
+            origWarn.apply(console, arguments);
+          }
+        };
+      })();
+    </script>
+
+    <!-- ✅ Add Razorpay checkout script -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+  </head>
+
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
