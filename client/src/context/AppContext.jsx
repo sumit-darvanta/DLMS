@@ -266,35 +266,39 @@ export const AppContextProvider = (props) => {
 
   // ✅ Role-based redirect + data fetch + login success message
   useEffect(() => {
-    if (!isLoaded) return;
+  if (!isLoaded) return;
 
-    if (!user) {
-      roleRedirectedRef.current = false;
-      previousUserRef.current = null;
-      return;
-    }
+  if (!user) {
+    sessionStorage.removeItem("welcome_shown");
+    roleRedirectedRef.current = false;
+    previousUserRef.current = null;
+    return;
+  }
 
-    // Show login success message when user logs in (transition from null to user)
-    if (!previousUserRef.current && user) {
-      toast.success(
-        `Welcome back to ${
-          user.firstName || user.emailAddresses[0]?.emailAddress || "User"
-        } 🎉`
-      );
-    }
+  // ✅ Show welcome toast only once per session
+  const hasShownWelcome = sessionStorage.getItem("welcome_shown");
+  if (!hasShownWelcome) {
+    toast.success(
+      `Welcome ${
+        user.firstName || user.emailAddresses[0]?.emailAddress || "User"
+      } 🎉`
+    );
+    sessionStorage.setItem("welcome_shown", "true");
+  }
 
-    previousUserRef.current = user;
+  previousUserRef.current = user;
 
-    const role = user.publicMetadata?.role || "student";
-    fetchUserData();
-    fetchUserEnrolledCourses();
+  const role = user.publicMetadata?.role || "student";
 
-    if (!roleRedirectedRef.current) {
-      if (role === "educator" || role === "admin") navigate("/educator");
-      else navigate("/");
-      roleRedirectedRef.current = true;
-    }
-  }, [user, isLoaded]);
+  fetchUserData();
+  fetchUserEnrolledCourses();
+
+  if (!roleRedirectedRef.current) {
+    navigate(role === "educator" || role === "admin" ? "/educator" : "/");
+    roleRedirectedRef.current = true;
+  }
+ }, [user, isLoaded]);
+
 
   useEffect(() => {
     fetchAllCourses();
